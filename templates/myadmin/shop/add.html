@@ -1,15 +1,19 @@
 {% extends "myadmin/base.html" %}
+
+
 {% block main_body %}
+    <!-- Content Header (Page header) -->
     <section class="content-header">
       <h1>
-        员工管理
+        店铺管理
         <small>订餐系统后台管理</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> 首页</a></li>
-        <li class="active">员工管理</li>
+        <li class="active">店铺管理</li>
       </ol>
     </section>
+
     <!-- Main content -->
     <section class="content container-fluid">
 
@@ -21,35 +25,38 @@
             </div>
             <!-- /.box-header -->
             <!-- form start -->
-            <form class="form-horizontal" action="{% url 'myadmin_user_insert' %}" method="post">
-                {% csrf_token %}
+            <form class="form-horizontal" action="{% url 'myadmin_shop_insert' %}" method="post" enctype="multipart/form-data">
+              {% csrf_token %}
               <div class="box-body">
                 <div class="form-group">
-                  <label for="inputEmail3" class="col-sm-2 control-label">员工帐号：</label>
-
+                  <label for="inputEmail3" class="col-sm-2 control-label">店铺名称：</label>
                   <div class="col-sm-4">
-                    <input type="text" name="username" class="form-control" id="inputEmail3" placeholder="员工帐号">
+                    <input type="text" name="name" class="form-control" id="inputText1" placeholder="店铺名称" />
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="inputEmail3" class="col-sm-2 control-label">员工昵称：</label>
+                  <label for="inputEmail3" class="col-sm-2 control-label">联系电话：</label>
 
                   <div class="col-sm-4">
-                    <input type="text" name="nickname" class="form-control" id="inputEmail3" placeholder="员工昵称">
+                    <input type="text" name="phone" class="form-control" id="inputText2" placeholder="联系电话" />
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
-
+                  <label for="inputEmail3" class="col-sm-2 control-label">具体地址：</label>
                   <div class="col-sm-4">
-                    <input type="password" name="password" class="form-control">
+                    <input type="text" name="address" class="form-control" id="inputText3" placeholder="具体地址" />
                   </div>
                 </div>
-                 <div class="form-group">
-                  <label for="inputEmail3" class="col-sm-2 control-label">重复密码：</label>
-
+                <div class="form-group">
+                  <label for="inputPassword3" class="col-sm-2 control-label">店铺封面：</label>
                   <div class="col-sm-4">
-                    <input type="password" name="repassword" class="form-control">
+                    <input type="file" name="cover_pic" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="inputPassword3" class="col-sm-2 control-label">店铺logo：</label>
+                  <div class="col-sm-4">
+                    <input type="file" name="banner_pic" />
                   </div>
                 </div>
               </div>

@@ -1,24 +1,25 @@
-# 员工信息视图文件
+# 店铺信息视图文件
 from django.shortcuts import render
 from django.http import  HttpResponse
 from django.core.paginator import  Paginator
-from myadmin.models import User
+from myadmin.models import Shop
 from datetime import  datetime
+import time
 import random
 # 封装或条件
-from django.db.models import Q
+# from django.db.models import Q
 # 创建你的视图
 
 
 def index(request,pindex=1):
     '''浏览信息'''
-    ulist =  User.objects.filter(status__lt=9)
+    slist =  Shop.objects.filter(status__lt=9)
 
     # 获取并判读搜索添加
     kw = request.GET.get("keyword",None)
     mywhere = []
     if kw:
-        ulist = ulist.filter(Q(username__contains=kw)|Q(nickname__contains=kw))
+        slist = slist.filter(name=kw)
         #维持搜索条件
         mywhere.append('keyword='+kw)
 
@@ -26,7 +27,7 @@ def index(request,pindex=1):
 
     # 执行分页处理
     pindex = int(pindex)
-    page = Paginator(ulist,5) #读取每页5条数据
+    page = Paginator(slist,5) #读取每页5条数据
     maxpage = page.num_pages #获取最大页数
     # 判断当前页是否越界
     if pindex > maxpage:
@@ -35,28 +36,43 @@ def index(request,pindex=1):
         pindex=1
     list2 = page.page(pindex) #获取当前页数据
     plist = page.page_range # 获取页码信息
-    context = {'userlist':list2,'plist':plist,'pindex':pindex,'maxpage':maxpage,'mywhere':mywhere}
-    return render(request,"myadmin/user/index.html",context)
+    context = {'shoplist':list2,'plist':plist,'pindex':pindex,'maxpage':maxpage,'mywhere':mywhere}
+    return render(request,"myadmin/shop/index.html",context)
 
 def add(request):
     '''添加表单'''
-    return render(request,'myadmin/user/add.html')
+    return render(request,'myadmin/shop/add.html')
 
 def insert(request):
     '''执行添加'''
     try:
-        ob=User()
-        ob.username = request.POST['username']
-        ob.nickname = request.POST['nickname']
-        # 当前员工信心的密码做md5处理
-        import hashlib
-        md5 = hashlib.md5()
-        n = random.randint(100000, 999999)
-        s = request.POST['password'] + str(n) # 从表单中获取密码并添加干扰值
-        md5.update(s.encode('utf-8')) # 将要产生的md5字串放进去
-        ob.password_hash = md5.hexdigest()# 获取md5值
-        ob.password_salt = n
+        # 店铺封面图片的上传处理
+        myfile = request.FILES.get("cover_pic", None)
+        if not myfile:
+            return HttpResponse("没有店铺封面上传文件信息")
+        cover_pic = str(time.time()) + "." + myfile.name.split('.').pop()
+        destination = open("./static/uploads/shop/" + cover_pic, "wb+")
+        for chunk in myfile.chunks():  # 分块写入文件
+            destination.write(chunk)
+        destination.close()
+
+        # 店铺logo图片的上传处理
+        myfile = request.FILES.get("banner_pic", None)
+        if not myfile:
+            return HttpResponse("没有店铺logo上传文件信息")
+        banner_pic = str(time.time()) + "." + myfile.name.split('.').pop()
+        destination = open("./static/uploads/shop/" + banner_pic, "wb+")
+        for chunk in myfile.chunks():  # 分块写入文件
+            destination.write(chunk)
+        destination.close()
+        # 实例化封装信息并执行添加操作
+        ob=Shop()
+        ob.name = request.POST['name']
+        ob.address = request.POST['address']
+        ob.phone = request.POST['phone']
         ob.status=1
+        ob.cover_pic = cover_pic
+        ob.banner_pic = banner_pic
         ob.create_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         ob.update_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         ob.save()
@@ -65,10 +81,10 @@ def insert(request):
         context = {'info':'添加失败'}
     return render(request,'myadmin/info.html',context)
 
-def delete(request,uid):
+def delete(request,sid):
     '''删除'''
     try:
-        ob = User.objects.get(id=uid)
+        ob = Shop.objects.get(id=sid)
         ob.status=9
         ob.update_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         ob.save()
@@ -77,13 +93,13 @@ def delete(request,uid):
         context = {'info':'删除失败'}
     return render(request,'myadmin/info.html',context)
 
-def edit(request,uid):
+def edit(request,sid):
     '''编辑表单'''
     try:
-        ob = User.objects.get(id=uid)
-        context = {'user':ob}
-        print(ob.username)
-        return render(request,'myadmin/user/edit.html',context)
+        ob = Shop.objects.get(id=sid)
+        context = {'shop':ob}
+        print(ob.name)
+        return render(request,'myadmin/shop/edit.html',context)
     except Exception  as err:
         context = {'info':'没有找到要修改的信息'}
         return render(request,'myadmin/info.html',context)
@@ -91,8 +107,10 @@ def edit(request,uid):
 def update(request,uid):
     '''更新'''
     try:
-        ob = User.objects.get(id=uid)
-        ob.nickname = request.POST['nickname']
+        ob = Shop.objects.get(id=uid)
+        ob.name = request.POST['name']
+        ob.adress = request.POST['adress']
+        ob.phone = request.POST['phone']
         ob.status = request.POST['status']
         ob.update_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         ob.save()
